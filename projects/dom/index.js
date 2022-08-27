@@ -49,9 +49,11 @@ function prepend(what, where) {
  */
 function findAllPSiblings(where) {
   const arr = [];
-  for (let i of where.children)
-    if (i.nextElementSibling && i.nextElementSibling.nodeName == 'P')
+  for (let i of where.children) {
+    if (i.nextElementSibling && i.nextElementSibling.nodeName == 'P') {
       arr.push(i);
+    }
+  }
   return arr;
 }
 
@@ -95,9 +97,11 @@ function findError(where) {
    должно быть преобразовано в <div></div><p></p>
  */
 function deleteTextNodes(where) {
-  for (let i of where.childNodes)
-    if (i.nodeType == 3)
+  for (let i of where.childNodes) {
+    if (i.nodeType == 3) {
       where.removeChild(i);
+    }
+  }
 }
 
 /*
@@ -118,8 +122,9 @@ function deleteTextNodesRecursive(where) {
       where.removeChild(el);
       i--;
     }
-    if (el.childNodes)
+    if (el.childNodes) {
       deleteTextNodesRecursive(el);
+    }
   }
 }
 
@@ -152,19 +157,27 @@ function collectDOMStat(root) {
   iteration(root.childNodes);
   function iteration(el) {
     for (let i of el) {
-      if (i.nodeType == 3)
+      if (i.nodeType == 3) {
         result.texts++;
-      if (i.nodeType == 1)
-        if (result.tags[i.nodeName])
+      }
+      if (i.nodeType == 1) {
+        if (result.tags[i.nodeName]) {
           result.tags[i.nodeName]++;
-        else
+        }
+        else {
           result.tags[i.nodeName] = 1;
-      if (i.classList && i.classList.length)
-        for (let b of i.classList)
-          if (result.classes[b])
+        }
+      }
+      if (i.classList && i.classList.length) {
+        for (let b of i.classList) {
+          if (result.classes[b]) {
             result.classes[b]++;
-          else
+          }
+          else {
             result.classes[b] = 1;
+          }
+        }
+      }
       if (i.childNodes.length) {
         iteration(i.childNodes);
       }
@@ -212,13 +225,14 @@ function observeChildNodes(where, fn) {
   };
   const observer = new MutationObserver(record => {
     for (let rec of record) {
-      if (rec.type == 'childList')
+      if (rec.type == 'childList') {
         fn({
           type: rec.addedNodes.length ? 'insert' : 'remove',
           nodes: [
             ...(rec.addedNodes.length ? rec.addedNodes : rec.removedNodes),
           ],
         });
+      }
     }
   });
   observer.observe(where, config);
