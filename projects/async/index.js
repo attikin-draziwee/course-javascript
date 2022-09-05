@@ -30,6 +30,7 @@
  */
 
 import './towns.html';
+import { loadAndSortTowns } from './functions.js';
 
 const homeworkContainer = document.querySelector('#app');
 
@@ -39,7 +40,9 @@ const homeworkContainer = document.querySelector('#app');
  Массив городов пожно получить отправив асинхронный запрос по адресу
  https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
  */
-function loadTowns() {}
+function loadTowns() {
+  return loadAndSortTowns();
+}
 
 /*
  Функция должна проверять встречается ли подстрока chunk в строке full
@@ -52,7 +55,9 @@ function loadTowns() {}
    isMatching('Moscow', 'SCO') // true
    isMatching('Moscow', 'Moscov') // false
  */
-function isMatching(full, chunk) {}
+function isMatching(full, chunk) {
+  return full.toLowerCase().includes(chunk.toLowerCase());
+}
 
 /* Блок с надписью "Загрузка" */
 const loadingBlock = homeworkContainer.querySelector('#loading-block');
@@ -67,8 +72,51 @@ const filterInput = homeworkContainer.querySelector('#filter-input');
 /* Блок с результатами поиска */
 const filterResult = homeworkContainer.querySelector('#filter-result');
 
-retryButton.addEventListener('click', () => {});
+let towns = [];
 
-filterInput.addEventListener('input', function () {});
+(async function start() {
+  loadingFailedBlock.classList.add('hidden');
+  filterBlock.classList.add('hidden');
+  towns = await tryToLoadTown();
+  filterInput.addEventListener('input', function (e) {
+    filterResult.innerHTML = '';
+    for (const city of towns) {
+      const name = city.name;
+      if (isMatching(name, this.value) && this.value.length > 0) {
+        filterResult.append(addItem(name));
+      }
+    }
+  });
+})();
+
+async function tryToLoadTown() {
+  const response = await loadTowns()
+    .then(excellent, failed)
+    .finally(() => {
+      loadingBlock.classList.add('hidden');
+    });
+  return await response;
+}
+
+retryButton.addEventListener('click', async () => {
+  towns = await tryToLoadTown();
+});
+
+function excellent(value) {
+  filterBlock.classList.remove('hidden');
+  loadingFailedBlock.classList.add('hidden');
+  return value;
+}
+function failed(value) {
+  filterBlock.classList.add('hidden');
+  loadingFailedBlock.classList.remove('hidden');
+  return value;
+}
+
+function addItem(value) {
+  const el = document.createElement('div');
+  el.textContent = value;
+  return el;
+}
 
 export { loadTowns, isMatching };
