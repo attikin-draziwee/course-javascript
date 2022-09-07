@@ -127,7 +127,10 @@ function uploadTable(obj) {
     deleteButton.textContent = 'Удалить';
     deleteData.append(deleteButton);
 
-    deleteButton.addEventListener('click', () => deleteCookie(nameData.textContent));
+    deleteButton.addEventListener('click', (e) => {
+      deleteCookie(nameData.textContent);
+      row.parentNode.removeChild(row);
+    });
 
     row.append(nameData, valueData, deleteData);
     rows.push(row);
@@ -138,6 +141,6 @@ function uploadTable(obj) {
 
 function deleteCookie(name) {
   if (Object.keys(loadCookie()).some((key) => key === name)) {
-    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    document.cookie = `${name}=-1;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
   }
 }
