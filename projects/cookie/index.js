@@ -45,8 +45,99 @@ const addButton = homeworkContainer.querySelector('#add-button');
 // таблица со списком cookie
 const listTable = homeworkContainer.querySelector('#list-table tbody');
 
-filterNameInput.addEventListener('input', function () {});
+let isFiltred = false;
 
-addButton.addEventListener('click', () => {});
+filterNameInput.addEventListener('input', function (e) {
+  search(this.value);
+});
 
-listTable.addEventListener('click', (e) => {});
+function search(keyword) {
+  if (keyword.length > 0) {
+    const cookies = loadCookie();
+    const filterWord = keyword;
+    const result = {};
+    for (const key of Object.keys(cookies)) {
+      const value = cookies[key].toLowerCase();
+      if (
+        key.toLowerCase().includes(filterWord.toLowerCase()) ||
+        value.includes(filterWord.toLowerCase())
+      ) {
+        result[key] = value;
+      }
+    }
+    uploadTable(result);
+    isFiltred = true;
+  } else {
+    isFiltred = false;
+    uploadTable(loadCookie());
+  }
+}
+
+addButton.addEventListener('click', () => {
+  const name = addNameInput.value,
+    value = addValueInput.value;
+  const keyValue = `${name}=${value}`;
+  if (name && value) {
+    document.cookie = keyValue;
+    addNameInput.value = '';
+    addValueInput.value = '';
+    if (!isFiltred) {
+      uploadTable(loadCookie());
+    } else {
+      if (name.toLowerCase().includes(filterNameInput.value.toLowerCase())) {
+        search(filterNameInput.value.toLowerCase());
+      } else if (value.toLowerCase().includes(filterNameInput.value.toLowerCase())) {
+        search(filterNameInput.value.toLowerCase());
+      }
+    }
+  }
+});
+
+listTable.addEventListener('click', (e) => {
+  if (!isFiltred) {
+    uploadTable(loadCookie());
+  }
+});
+
+document.addEventListener('DOMContentLoaded', (e) => {
+  if (document.cookie) {
+    uploadTable(loadCookie());
+  }
+});
+
+function loadCookie() {
+  return document.cookie.split('; ').reduce((acc, el) => {
+    const [name, value] = el.split('=');
+    acc[name] = value;
+    return acc;
+  }, {});
+}
+
+function uploadTable(obj) {
+  const rows = [];
+  for (const item of Object.keys(obj)) {
+    const row = document.createElement('tr');
+    const nameData = document.createElement('td');
+    const valueData = document.createElement('td');
+    const deleteData = document.createElement('td');
+    const deleteButton = document.createElement('button');
+
+    nameData.textContent = item;
+    valueData.textContent = obj[item];
+    deleteButton.textContent = 'Удалить';
+    deleteData.append(deleteButton);
+
+    deleteButton.addEventListener('click', () => deleteCookie(nameData.textContent));
+
+    row.append(nameData, valueData, deleteData);
+    rows.push(row);
+  }
+  listTable.innerHTML = '';
+  listTable.append(...rows);
+}
+
+function deleteCookie(name) {
+  if (Object.keys(loadCookie()).some((key) => key === name)) {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+  }
+}
